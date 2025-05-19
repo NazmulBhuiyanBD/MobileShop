@@ -34,12 +34,6 @@ namespace MobileShop.Controllers
         // GET: Products/Details/5
         public async Task<IActionResult> Details(Guid? id)
         {
-            string userId = HttpContext.Session.GetString("AdminUserName");
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToAction("Login","Admin");
-            }
             if (id == null)
             {
                 return NotFound();
@@ -66,6 +60,74 @@ namespace MobileShop.Controllers
             }
             return View();
         }
+        // Add these methods to your ProductsController
+        public IActionResult Cart()
+        {
+            var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+            return View(cart);
+        }
+
+        public IActionResult AddToCart(Guid id)
+        {
+            var product = _context.Products.FirstOrDefault(p => p.ProductId == id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+
+            var existingItem = cart.FirstOrDefault(p => p.ProductId == id);
+            if (existingItem != null)
+            {
+                existingItem.Quantity++;
+            }
+            else
+            {
+                cart.Add(new CartItem
+                {
+                    ProductId = product.ProductId,
+                    ProductName = product.ProductName,
+                    ProductPrice = product.ProductPrice,
+                    ProductImage = product.ProductImage,
+                    Quantity = 1
+                });
+            }
+
+            HttpContext.Session.SetObjectAsJson("Cart", cart);
+            return RedirectToAction("Cart");
+        }
+
+        public IActionResult RemoveFromCart(Guid id)
+        {
+            var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart");
+            if (cart != null)
+            {
+                var itemToRemove = cart.FirstOrDefault(p => p.ProductId == id);
+                if (itemToRemove != null)
+                {
+                    cart.Remove(itemToRemove);
+                    HttpContext.Session.SetObjectAsJson("Cart", cart);
+                }
+            }
+            return RedirectToAction("Cart");
+        }
+
+        public IActionResult UpdateCart(Guid id, int quantity)
+        {
+            var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart");
+            if (cart != null)
+            {
+                var item = cart.FirstOrDefault(p => p.ProductId == id);
+                if (item != null)
+                {
+                    item.Quantity = quantity;
+                    HttpContext.Session.SetObjectAsJson("Cart", cart);
+                }
+            }
+            return RedirectToAction("Cart");
+        }
+
 
         // POST: Products/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
