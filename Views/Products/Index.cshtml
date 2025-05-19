@@ -1,0 +1,48 @@
+﻿@model IEnumerable<MobileShop.Models.Product>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1 class="text-center mb-4">Product List</h1>
+
+<p class="text-end">
+    <a asp-action="Create" class="btn btn-primary">Add Product</a>
+</p>
+
+<table class="table table-bordered table-hover shadow-sm">
+    <thead class="table-dark">
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.First().ProductName)</th>
+            <th>@Html.DisplayNameFor(model => model.First().ProductPrice)</th>
+            <th>@Html.DisplayNameFor(model => model.First().ProductDescription)</th>
+            <th>Image</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>@item.ProductPrice.ToString("C")</td>
+                <td>@item.ProductDescription</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.ProductImage))
+                    {
+                        <img src="@item.ProductImage" alt="Product Image" width="80" class="img-thumbnail" />
+                    }
+                    else
+                    {
+                        <span>No Image</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.ProductId" class="btn btn-sm btn-warning">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.ProductId" class="btn btn-sm btn-info">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.ProductId" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

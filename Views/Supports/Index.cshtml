@@ -1,0 +1,44 @@
+﻿@model IEnumerable<MobileShop.Models.Support>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1 class="text-center mb-2">Support List</h1>
+
+<table class="table  table-bordered table-hover shadow-sm">
+    <thead class="table-dark">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.UserName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PhoneNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Message)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PhoneNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Message)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.SupportId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.SupportId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.SupportId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
