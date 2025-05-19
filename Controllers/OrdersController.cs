@@ -19,6 +19,99 @@ namespace MobileShop.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        public IActionResult Checkout()
+        {
+            var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
+
+            if (cart.Count == 0)
+            {
+                return RedirectToAction("Cart","Products");
+            }
+
+            var model = new CheckoutViewModel
+            {
+                CartItems = cart,
+                TotalAmount = (decimal)cart.Sum(item => item.ProductPrice * item.Quantity)
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Checkout(CheckoutViewModel model)
+        {
+            var userId = HttpContext.Session.GetString("PhoneNumber");
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart");
+            if (cart == null || !cart.Any())
+            {
+                ModelState.AddModelError("", "Your cart is empty");
+                return RedirectToAction("Index", "Cart");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.CartItems = cart;
+                model.TotalAmount = (decimal)cart.Sum(item => item.ProductPrice * item.Quantity);
+                return View(model);
+            }
+
+            try
+            {
+                var order = new Order
+                {
+                    CustomerName = model.FullName,
+                    CustomerPhone = model.PhoneNumber,
+                    ShippingAddress = model.Address,
+                    TotalAmount = (decimal)cart.Sum(item => item.ProductPrice * item.Quantity),
+                    OrderItems = cart.Select(item => new OrderItem
+                    {
+                        ProductId = item.ProductId,
+                        ProductName = item.ProductName,
+                        Price = (decimal)item.ProductPrice,
+                        Quantity = item.Quantity
+                    }).ToList()
+                };
+
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+
+                // Clear cart
+                HttpContext.Session.Remove("Cart");
+
+                return RedirectToAction("OrderConfirmation", new { id = order.OrderId });
+            }
+            catch (Exception ex)
+            {
+                // Log the error (you should implement proper logging)
+                ModelState.AddModelError("", "An error occurred while processing your order. Please try again.");
+
+                // Repopulate model data
+                model.CartItems = cart;
+                model.TotalAmount = (decimal)cart.Sum(item => item.ProductPrice * item.Quantity);
+                return View(model);
+            }
+        }
+
+        public IActionResult OrderConfirmation(Guid id)
+        {
+            var order = _context.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefault(o => o.OrderId == id);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return View(order);
+        }
         // GET: Orders
         public async Task<IActionResult> Index()
         {

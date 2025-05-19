@@ -1,7 +1,18 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-
+﻿@{
+    ViewData["Title"] = "User Dashboard";
 }
-hello
+<div class="mt-2 row">
+    <h1 class="text-center">User Dashboard</h1>
+    <div class="mt-2 me-3 col-3 ProductBox border-2 shadow-lg rounded-2 p-2">
+        <img src="/assets/images/user.jpg" alt="Profile" />
+        <a asp-action="Profile" asp-controller="Account">Profile Info</a>
+    </div>
+    <div class="mt-2 me-3 col-3 ProductBox border-2 shadow-lg rounded-2 p-2">
+        <img src="/assets/images/product.jpg" alt="Profile" />
+        <a asp-action="Index" asp-controller="Order">Order</a>
+    </div> 
+    <div class="mt-2 col-3 ProductBox border-2 shadow-lg rounded-2 p-2">
+        <img src="/assets/images/support.jpg" alt="Profile" />
+        <a asp-action="Create" asp-controller="Supports">Help Line</a>
+    </div>
+</div>

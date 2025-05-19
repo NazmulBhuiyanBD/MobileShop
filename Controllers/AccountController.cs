@@ -81,7 +81,70 @@ namespace MobileShop.Controllers
 
             return View();
         }
+        public IActionResult Profile()
+        {
+            string phoneNumber = HttpContext.Session.GetString("PhoneNumber");
 
+            if (string.IsNullOrEmpty(phoneNumber))
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Get user from database
+            var user = _context.Users.FirstOrDefault(u => u.PhoneNumber == phoneNumber);
+
+            if (user == null)
+            {
+                // User not found in database but session exists - clear session
+                HttpContext.Session.Remove("PhoneNumber");
+                return RedirectToAction("Login");
+            }
+
+            return View(user); // Pass the user object to the view
+        }
+        [HttpGet]
+        public IActionResult EditProfile()
+        {
+            string phoneNumber = HttpContext.Session.GetString("PhoneNumber");
+            if (string.IsNullOrEmpty(phoneNumber))
+            {
+                return RedirectToAction("Login");
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.PhoneNumber == phoneNumber);
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            return View(user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EditProfile(User model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var existingUser = _context.Users.FirstOrDefault(u => u.PhoneNumber == model.PhoneNumber);
+            if (existingUser == null)
+            {
+                return NotFound();
+            }
+
+            // Update only allowed fields
+            existingUser.Name = model.Name;
+            existingUser.Address = model.Address;
+
+            _context.Update(existingUser);
+            _context.SaveChanges();
+
+            TempData["SuccessMessage"] = "Profile updated successfully!";
+            return RedirectToAction("Profile");
+        }
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();

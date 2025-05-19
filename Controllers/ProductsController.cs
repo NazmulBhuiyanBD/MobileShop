@@ -63,12 +63,22 @@ namespace MobileShop.Controllers
         // Add these methods to your ProductsController
         public IActionResult Cart()
         {
+            var userId = HttpContext.Session.GetString("PhoneNumber");
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
             var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
             return View(cart);
         }
 
         public IActionResult AddToCart(Guid id)
         {
+            var userId = HttpContext.Session.GetString("PhoneNumber");
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
             var product = _context.Products.FirstOrDefault(p => p.ProductId == id);
             if (product == null)
             {

@@ -31,27 +31,15 @@ namespace MobileShop.Controllers
             return View(await _context.Supports.ToListAsync());
         }
 
-        // GET: Supports/Details/5
-        public async Task<IActionResult> Details(Guid? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var support = await _context.Supports
-                .FirstOrDefaultAsync(m => m.SupportId == id);
-            if (support == null)
-            {
-                return NotFound();
-            }
-
-            return View(support);
-        }
-
         // GET: Supports/Create
         public IActionResult Create()
         {
+            string userId = HttpContext.Session.GetString("PhoneNumber");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login","Account");
+            }
             return View();
         }
 
@@ -62,16 +50,45 @@ namespace MobileShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("SupportId,UserName,PhoneNumber,Message")] Support support)
         {
+            string userId = HttpContext.Session.GetString("PhoneNumber");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login","Account");
+            }
             if (ModelState.IsValid)
             {
                 support.SupportId = Guid.NewGuid();
                 _context.Add(support);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Dashboard","Account");
             }
             return View(support);
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            string adminId = HttpContext.Session.GetString("AdminUserName");
 
+            if (string.IsNullOrEmpty(adminId))
+            {
+                return RedirectToAction("Login", "Admin");
+            }
+
+            var support = await _context.Supports.FindAsync(id);
+            if (support == null)
+            {
+                TempData["ErrorMessage"] = "Support ticket not found!";
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.Supports.Remove(support);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Support ticket deleted successfully!";
+            return RedirectToAction(nameof(Index));
+        }
 
         private bool SupportExists(Guid id)
         {

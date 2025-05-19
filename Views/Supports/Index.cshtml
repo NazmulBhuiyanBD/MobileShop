@@ -4,41 +4,47 @@
     ViewData["Title"] = "Index";
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
 <h1 class="text-center mb-2">Support List</h1>
 
-<table class="table  table-bordered table-hover shadow-sm">
+<table class="table table-bordered table-hover shadow-sm">
     <thead class="table-dark">
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.UserName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PhoneNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Message)
-            </th>
-            <th></th>
+            <th>@Html.DisplayNameFor(model => model.UserName)</th>
+            <th>@Html.DisplayNameFor(model => model.PhoneNumber)</th>
+            <th>@Html.DisplayNameFor(model => model.Message)</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.UserName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PhoneNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Message)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.SupportId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.SupportId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.SupportId">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.UserName)</td>
+                <td>@Html.DisplayFor(modelItem => item.PhoneNumber)</td>
+                <td>@Html.DisplayFor(modelItem => item.Message)</td>
+                <td>
+                    <form asp-action="Delete" method="post" onsubmit="return confirm('Are you sure you want to delete this support ticket?');">
+                        <input type="hidden" name="id" value="@item.SupportId" />
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

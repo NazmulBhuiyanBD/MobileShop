@@ -4,12 +4,12 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+<h1 class="text-center mt-2">Help Line</h1>
 
-<h4>Support</h4>
+<h4 class="text-center text-secondary">If you have any question feel free to Message</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-12">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
@@ -27,15 +27,15 @@
                 <input asp-for="Message" class="form-control" />
                 <span asp-validation-for="Message" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+            <div class="form-group ">
+                <input type="submit" value="Create" class="btn btn-primary mt-2" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a class="btn btn-secondary mt-2" asp-action="Dashboard" asp-controller="Account">Back to Profile</a>
 </div>
 
 @section Scripts {
