@@ -1,0 +1,70 @@
+﻿@model MobileShop.Controllers.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="container mt-4">
+    <h2>Checkout</h2>
+
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-action="PlaceOrder" method="post">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Customer Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="CustomerName" class="form-label"></label>
+                            <input asp-for="CustomerName" class="form-control" />
+                            <span asp-validation-for="CustomerName" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="CustomerPhone" class="form-label"></label>
+                            <input asp-for="CustomerPhone" class="form-control" />
+                            <span asp-validation-for="CustomerPhone" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ShippingAddress" class="form-label"></label>
+                            <textarea asp-for="ShippingAddress" class="form-control"></textarea>
+                            <span asp-validation-for="ShippingAddress" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Place Order</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Back to Cart</a>
+            </form>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Order Summary</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        @foreach (var item in Model.CartItems)
+                        {
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>@item.ProductName x @item.Quantity</span>
+                                <span>$@item.Total</span>
+                            </li>
+                        }
+                        <li class="list-group-item d-flex justify-content-between fw-bold">
+                            <span>Total</span>
+                            <span>$@Model.CartItems.Sum(item => item.Total)</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

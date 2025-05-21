@@ -1,0 +1,63 @@
+﻿@model IEnumerable<MobileShop.Models.Order>
+
+@{
+    ViewData["Title"] = "Order List";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Order List</h2>
+
+    <table class="table table-striped table-bordered table-hover shadow">
+        <thead class="table-dark">
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.OrderDate)</th>
+                <th>@Html.DisplayNameFor(model => model.CustomerName)</th>
+                <th>@Html.DisplayNameFor(model => model.CustomerPhone)</th>
+                <th>@Html.DisplayNameFor(model => model.ShippingAddress)</th>
+                <th>@Html.DisplayNameFor(model => model.ProductName)</th>
+                <th>@Html.DisplayNameFor(model => model.Price)</th>
+                <th>@Html.DisplayNameFor(model => model.Status)</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.OrderDate.ToString("yyyy-MM-dd")</td>
+                    <td>@item.CustomerName</td>
+                    <td>@item.CustomerPhone</td>
+                    <td>@item.ShippingAddress</td>
+                    <td>@item.ProductName</td>
+                    <td>$@item.Price.ToString("F2")</td>
+                    <td>
+                        @if (item.Status == "Pending")
+                        {
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        }
+                        else if (item.Status == "Shipped")
+                        {
+                            <span class="badge bg-primary">Shipped</span>
+                        }
+                        else if (item.Status == "Received")
+                        {
+                            <span class="badge bg-success">Received</span>
+                        }
+                        else if (item.Status == "Cancel")
+                        {
+                            <span class="badge bg-danger">Cancel</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@item.Status</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        <a asp-action="Edit" asp-route-id="@item.OrderId" class="btn btn-sm btn-outline-warning me-1">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@item.OrderId" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this order?');">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -45,7 +45,6 @@ namespace MobileShop.Controllers
             return View();
         }
 
-        // POST: Login
         [HttpPost]
         public IActionResult Login(string PhoneNumber, string Password)
         {
@@ -53,13 +52,18 @@ namespace MobileShop.Controllers
 
             if (user != null)
             {
-                HttpContext.Session.SetString("PhoneNumber", user.PhoneNumber.ToString());
+                // Store all needed session data
+                HttpContext.Session.SetString("PhoneNumber", user.PhoneNumber);
+                HttpContext.Session.SetString("UserName", user.Name);
+                HttpContext.Session.SetString("Address", user.Address);
+
                 return RedirectToAction("Dashboard");
             }
 
             ViewBag.Error = "Invalid credentials!";
             return View();
         }
+
 
         public IActionResult Dashboard()
         {
@@ -135,16 +139,21 @@ namespace MobileShop.Controllers
                 return NotFound();
             }
 
-            // Update only allowed fields
+            // Update fields
             existingUser.Name = model.Name;
             existingUser.Address = model.Address;
 
             _context.Update(existingUser);
             _context.SaveChanges();
 
+            // Refresh session values
+            HttpContext.Session.SetString("UserName", existingUser.Name);
+            HttpContext.Session.SetString("Address", existingUser.Address);
+
             TempData["SuccessMessage"] = "Profile updated successfully!";
             return RedirectToAction("Profile");
         }
+
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();

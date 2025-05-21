@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MobileShop.Data;
+using MobileShop.Migrations;
 using MobileShop.Models;
 
 namespace MobileShop.Controllers
@@ -19,99 +20,6 @@ namespace MobileShop.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public IActionResult Checkout()
-        {
-            var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
-
-            if (cart.Count == 0)
-            {
-                return RedirectToAction("Cart","Products");
-            }
-
-            var model = new CheckoutViewModel
-            {
-                CartItems = cart,
-                TotalAmount = (decimal)cart.Sum(item => item.ProductPrice * item.Quantity)
-            };
-
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Checkout(CheckoutViewModel model)
-        {
-            var userId = HttpContext.Session.GetString("PhoneNumber");
-            if (string.IsNullOrEmpty(userId))
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>("Cart");
-            if (cart == null || !cart.Any())
-            {
-                ModelState.AddModelError("", "Your cart is empty");
-                return RedirectToAction("Index", "Cart");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                model.CartItems = cart;
-                model.TotalAmount = (decimal)cart.Sum(item => item.ProductPrice * item.Quantity);
-                return View(model);
-            }
-
-            try
-            {
-                var order = new Order
-                {
-                    CustomerName = model.FullName,
-                    CustomerPhone = model.PhoneNumber,
-                    ShippingAddress = model.Address,
-                    TotalAmount = (decimal)cart.Sum(item => item.ProductPrice * item.Quantity),
-                    OrderItems = cart.Select(item => new OrderItem
-                    {
-                        ProductId = item.ProductId,
-                        ProductName = item.ProductName,
-                        Price = (decimal)item.ProductPrice,
-                        Quantity = item.Quantity
-                    }).ToList()
-                };
-
-                _context.Orders.Add(order);
-                await _context.SaveChangesAsync();
-
-                // Clear cart
-                HttpContext.Session.Remove("Cart");
-
-                return RedirectToAction("OrderConfirmation", new { id = order.OrderId });
-            }
-            catch (Exception ex)
-            {
-                // Log the error (you should implement proper logging)
-                ModelState.AddModelError("", "An error occurred while processing your order. Please try again.");
-
-                // Repopulate model data
-                model.CartItems = cart;
-                model.TotalAmount = (decimal)cart.Sum(item => item.ProductPrice * item.Quantity);
-                return View(model);
-            }
-        }
-
-        public IActionResult OrderConfirmation(Guid id)
-        {
-            var order = _context.Orders
-                .Include(o => o.OrderItems)
-                .FirstOrDefault(o => o.OrderId == id);
-
-            if (order == null)
-            {
-                return NotFound();
-            }
-
-            return View(order);
-        }
         // GET: Orders
         public async Task<IActionResult> Index()
         {
@@ -124,13 +32,14 @@ namespace MobileShop.Controllers
             return View(await _context.Orders.ToListAsync());
         }
 
+        // GET: Orders/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
             string adminId = HttpContext.Session.GetString("AdminUserName");
 
             if (string.IsNullOrEmpty(adminId))
             {
-                return RedirectToAction("Login", "Admin");
+                return RedirectToAction("Login","Admin");
             }
             if (id == null)
             {
@@ -146,15 +55,8 @@ namespace MobileShop.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("OrderId,ProductName,ProductPrice,Address,UserPhone")] Order order)
+        public async Task<IActionResult> Edit(Guid id, [Bind("OrderId,OrderDate,CustomerName,CustomerPhone,ShippingAddress,ProductName,Price,Status")] Order order)
         {
-            string adminId = HttpContext.Session.GetString("AdminUserName");
-
-            if (string.IsNullOrEmpty(adminId))
-            {
-                return RedirectToAction("Login", "Admin");
-            }
-
             if (id != order.OrderId)
             {
                 return NotFound();
@@ -184,36 +86,53 @@ namespace MobileShop.Controllers
         }
 
         // GET: Orders/Delete/5
+        public async Task<IActionResult> Delete(Guid? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
-        // GET: Orders/Delete/5 (No longer needed if you're not using a confirmation page)
-        // You can remove this action if you don't need it anymore
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(m => m.OrderId == id);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return View(order);
+        }
 
         // POST: Orders/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            try
+            var order = await _context.Orders.FindAsync(id);
+            if (order != null)
             {
-                var order = await _context.Orders.FindAsync(id);
-                if (order == null)
-                {
-                    TempData["ErrorMessage"] = "Order not found.";
-                    return RedirectToAction(nameof(Index));
-                }
-
                 _context.Orders.Remove(order);
-                await _context.SaveChangesAsync();
+            }
 
-                TempData["SuccessMessage"] = "Order deleted successfully!";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> ShowOrder()
+        {
+            string userPhone = HttpContext.Session.GetString("PhoneNumber");
+
+            if (string.IsNullOrEmpty(userPhone))
             {
-                // Log the error (you should implement proper logging)
-                TempData["ErrorMessage"] = "Error deleting order. Please try again.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Login", "Account");
             }
+
+            var orders = await _context.Orders
+                .Where(o => o.CustomerPhone == userPhone)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            return View(orders);
         }
 
         private bool OrderExists(Guid id)

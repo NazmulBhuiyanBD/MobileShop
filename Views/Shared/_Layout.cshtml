@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/TicketBookingSystem.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -29,18 +28,14 @@
 
                     @if (!string.IsNullOrEmpty(userId))
                     {
-                        <div class=" d-flex align-items-center ps-2 pe-2 border rounded-2">
-                            <a class="nav-link" asp-action="Cart" asp-controller="Products">
-                                 <i class="fas fa-shopping-cart"></i> Cart 
-                                @{
-                                    var cart = Context.Session.GetObjectFromJson<List<CartItem>>("Cart") ?? new List<CartItem>();
-                                    var itemCount = cart.Sum(item => item.Quantity);
-                                }
-                                @if (itemCount > 0)
-                                {
-                                    <span class="badge bg-danger">@itemCount</span>
-                                }
-                            </a>
+                        <div class=" d-flex align-items-center ps-2 pe-2 border rounded-2 bg-primary">
+                            <span class="material-symbols-outlined">
+                                shopping_cart
+                            </span>
+                                    <a class="nav-link text-white" asp-controller="Cart" asp-action="Index">
+                                        Cart (@(Context.Session.Get<List<CartItem>>("Cart")?.Count ?? 0))
+                                    </a>
+                            
                         </div> 
                         <div class="bg-primary d-flex align-items-center ps-2 pe-2 border rounded-2">
                             <span class="material-symbols-outlined">

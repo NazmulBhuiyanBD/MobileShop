@@ -1,40 +1,36 @@
 ﻿@model MobileShop.Models.Product
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Product Details";
 }
 
-<h1 class="text-center mt-2">Mobile Details</h1>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg border-0 rounded-4 p-4">
+                <div class="row g-4 align-items-center">
+                    <div class="col-md-6 text-center">
+                        <img src="@Model.ProductImage" class="img-fluid rounded-3 shadow-sm" alt="@Model.ProductName" style="max-height: 400px; object-fit: contain;" />
+                    </div>
+                    <div class="col-md-6">
+                        <h2 class="fw-bold mb-3">@Model.ProductName</h2>
+                        <h4 class="text-success fw-semibold mb-3">$@Model.ProductPrice.ToString("0.00")</h4>
+                        <p class="text-muted">@Model.ProductDescription</p>
 
-<div class="m-2 p-3 shadow-lg border-2 rounded-3">
-    <div class="row">
-        <div class="col-6 p-2">
-            <div class="ProductImage shadow-lg border-2 rounded-3 p-2">
-                <img src="@Html.DisplayFor(model => model.ProductImage)" alt="Mobile Image" style="height: 250px; object-fit: cover;" />
+                        <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                            <input type="hidden" name="productId" value="@Model.ProductId" />
+                            <div class="d-flex gap-3 mt-4">
+                                <button type="submit" class="btn btn-lg btn-primary px-4">
+                                    <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                                </button>
+                                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+                                    <i class="bi bi-arrow-left me-2"></i>Continue Shopping
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="col-6 p-2">
-            <div class="mt-4">
-                <label class="text-dark">Product Name:</label>
-                @Html.DisplayFor(model => model.ProductName)
-            </div>
-            <div class="mt-4">
-                <label class="text-dark">Product Price:</label>
-                $@Html.DisplayFor(model => model.ProductPrice)
-            </div>
-            <div class="d-flex mt-4">
-                <form asp-action="AddToCart" method="post" class="me-2">
-                    <input type="hidden" name="id" value="@Model.ProductId" />
-                    <button type="submit" class="btn btn-primary">Add To Cart</button>
-                </form>
-                <a class="btn btn-secondary" asp-action="Index" asp-controller="Home">Continue Shopping</a>
-            </div>
-        </div>
-    </div>
-    <div class="row mt-4">
-        <div class="col-12">
-            <h3>Product Description:</h3>
-            <div>@Html.DisplayFor(model => model.ProductDescription)</div>
         </div>
     </div>
 </div>
